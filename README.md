@@ -1,6 +1,6 @@
 # 명언 카드 (React + Vite)
 
-한국 태생 유명인의 **명언**을 카드 형태로 보여 주는 웹앱입니다. GPT(OpenAI)가 카드 JSON을 생성하고, 명언 분위기에 맞는 **배경 이미지**를 골라 표시합니다. API 키는 브라우저가 아닌 **Express 서버**에서만 사용합니다.
+한국 태생 유명인의 **명언**을 카드 형태로 보여 주는 웹앱입니다. GPT(OpenAI)가 카드 JSON을 생성하고, 명언 분위기에 맞는 **배경 이미지**를 골라 표시합니다. API 키는 브라우저가 아닌 **서버 측**에서만 사용합니다(로컬: Express, [Vercel](https://vercel.com/) 배포: `api/` Serverless Functions).
 
 **원격 저장소:** [github.com/junsang-dong/goorm-260504-wisdom-card-v2-react-vite](https://github.com/junsang-dong/goorm-260504-wisdom-card-v2-react-vite)
 
@@ -36,8 +36,9 @@ cd goorm-260504-wisdom-card-v2-react-vite
 ## 기술 스택
 
 - **프론트**: React 19, TypeScript, Vite 8, CSS Modules (`WisdomCard`, `QuoteCarousel` 등)
-- **백엔드**: Node.js + Express 5 (`server/index.mjs`, ESM)
-- **동시 실행**: `concurrently`로 `node server/index.mjs` + `vite`
+- **백엔드**: Node.js + Express 5(로컬 `server/index.mjs`) / 동일 로직을 [`server/api-handlers.mjs`](server/api-handlers.mjs)에서 Vercel [`api/*.mjs`](api/)로 재사용
+- **배포**: [Vercel](https://vercel.com/) — [`vercel.json`](vercel.json)으로 `dist` 정적 호스팅 + `/api/*` 함수
+- **동시 실행(로컬)**: `concurrently`로 `node server/index.mjs` + `vite`
 
 ---
 
@@ -50,8 +51,11 @@ cd goorm-260504-wisdom-card-v2-react-vite
 | [`src/components/WisdomCard.tsx`](src/components/WisdomCard.tsx) | 단일 명언 카드 UI |
 | [`src/components/QuoteCarousel.tsx`](src/components/QuoteCarousel.tsx) | 3장 트랙·가운데 정렬·키보드 탐색 |
 | [`src/lib/backgrounds.ts`](src/lib/backgrounds.ts) | `backgroundKey` → 정적 이미지 URL |
-| [`server/index.mjs`](server/index.mjs) | `/api/wisdom-card`, `/api/speech`, `/api/health`, OpenAI 호출 |
-| [`vite.config.ts`](vite.config.ts) | `server.port` 5153, `/api` 프록시 |
+| [`server/api-handlers.mjs`](server/api-handlers.mjs) | OpenAI 호출·JSON/TTS 응답 (Express·Vercel 공용) |
+| [`server/index.mjs`](server/index.mjs) | 로컬 Express 라우팅·`listen` |
+| [`api/health.mjs`](api/health.mjs), [`api/wisdom-card.mjs`](api/wisdom-card.mjs), [`api/speech.mjs`](api/speech.mjs) | Vercel Serverless 엔드포인트 |
+| [`vercel.json`](vercel.json) | 빌드 출력 `dist`, SPA 리라이트, 함수 `maxDuration` |
+| [`vite.config.ts`](vite.config.ts) | `server.port` 5153, 개발용 `/api` 프록시 |
 
 ---
 
@@ -74,6 +78,20 @@ cd goorm-260504-wisdom-card-v2-react-vite
 | `OPENAI_SPEECH_VOICE` | 아니오 | 기본 `coral`([내장 보이스](https://platform.openai.com/docs/guides/text-to-speech)) |
 | `API_PORT` | 아니오 | API 기본 `8787` |
 | `VITE_API_PROXY_TARGET` | 아니오 | Vite 프록시 대상 URL (기본 `http://127.0.0.1:8787`) |
+
+**Vercel:** 위 변수를 [Project → Settings → Environment Variables](https://vercel.com/docs/projects/environment-variables)에 동일한 이름으로 등록합니다(Production / Preview 필요 시). `VITE_*` 접두사는 사용하지 않습니다.
+
+---
+
+## Vercel 배포
+
+1. [Vercel](https://vercel.com/)에 로그인 후 **Add New… → Project**에서 GitHub 저장소 `goorm-260504-wisdom-card-v2-react-vite`를 연결합니다.
+2. Framework는 자동 감지되며, 루트의 [`vercel.json`](vercel.json)이 `npm run build`와 출력 디렉터리 `dist`를 사용합니다.
+3. **Environment Variables**에 `OPENAI_API_KEY`를 필수로 추가하고, 선택 변수(`OPENAI_MODEL`, `OPENAI_SPEECH_MODEL`, `OPENAI_SPEECH_VOICE`)를 로컬과 맞춥니다.
+4. **Deploy** 후 발급된 URL(예: `https://….vercel.app`)로 접속합니다. 동일 오리진에서 `/api/wisdom-card` 등이 Serverless로 처리됩니다.
+5. 배포 확인: 브라우저 또는 `curl`로 `GET https://<배포도메인>/api/health` → `{"ok":true}`.
+
+로컬에서 Vercel 환경을 흉내 내려면 [Vercel CLI](https://vercel.com/docs/cli) `vercel dev`를 사용할 수 있습니다(별도 설치).
 
 ---
 
@@ -98,7 +116,7 @@ npm run build
 npm run preview
 ```
 
-`preview`는 **정적 프론트만** 제공합니다. 프로덕션에서 GPT·TTS를 쓰려면 `server/index.mjs`와 동일한 API를 배포하고, 클라이언트의 `fetch` 대상 또는 리버스 프록시를 그 URL에 맞추면 됩니다.
+`preview`는 **정적 프론트만** 제공하며 `/api`는 연결되지 않습니다. **프로덕션**에서는 Vercel 등에 올릴 때 위 **Vercel 배포** 절차처럼 `api/` 함수와 `dist`를 함께 배포하면, 앱의 `fetch('/api/…')`가 그대로 동작합니다.
 
 ---
 
@@ -116,3 +134,4 @@ npm run preview
 
 - **토큰·비용**: 초기 로드와「다른 명언」마다 카드 **3장**을 요청하므로 Chat Completions는 **배치당 3회**입니다. **「읽기」**를 누를 때마다 Speech API가 **추가 1회** 호출됩니다.
 - **배경 이미지**: Unsplash 출처 파일명을 유지한 JPG가 `public/backgrounds/`에 포함되어 있습니다.
+- **Vercel 함수 시간**: [`vercel.json`](vercel.json)에서 `api/**/*.mjs`의 `maxDuration`은 **10초**(Hobby 등 기본 한도에 맞춤). OpenAI가 자주 타임아웃하면 플랜에 맞게 상향하세요.
