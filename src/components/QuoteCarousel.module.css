@@ -1,0 +1,72 @@
+.root {
+  width: 100%;
+  max-width: min(100vw - 1.5rem, calc(28rem * 2.35));
+  margin: 0 auto;
+}
+
+.viewport {
+  overflow: hidden;
+  width: 100%;
+  padding: 0.25rem 0 0.75rem;
+}
+
+.track {
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+  will-change: transform;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.slide {
+  flex: 0 0 min(28rem, calc(100vw - 3.5rem));
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 1.35rem;
+}
+
+.slide:focus-visible {
+  outline: 2px solid var(--accent, #6b4ce0);
+  outline-offset: 3px;
+}
+
+.slideInner {
+  width: 100%;
+  max-width: 28rem;
+}
+
+.slide[data-active='false'] .slideInner {
+  box-shadow: inset 0 0 0 1px rgb(200 60 70 / 0.35);
+  border-radius: 1.25rem;
+}
+
+.skeletonSlide {
+  flex: 0 0 min(28rem, calc(100vw - 3.5rem));
+  height: 22rem;
+  border-radius: 1.25rem;
+  background: linear-gradient(
+    120deg,
+    var(--code-bg) 0%,
+    var(--border) 40%,
+    var(--code-bg) 80%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+.skeletonRow {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}

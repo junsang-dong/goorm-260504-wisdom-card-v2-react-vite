@@ -1,0 +1,106 @@
+.wrap {
+  position: relative;
+  width: 100%;
+  max-width: 28rem;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 12%),
+    0 12px 40px rgb(0 0 0 / 28%);
+  transition:
+    transform 0.35s ease,
+    opacity 0.35s ease;
+}
+
+.wrap.inactive {
+  transform: scale(0.94);
+  opacity: 0.9;
+}
+
+.bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  filter: saturate(1.05);
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    165deg,
+    rgb(8 10 18 / 78%) 0%,
+    rgb(8 10 18 / 55%) 45%,
+    rgb(8 10 18 / 82%) 100%
+  );
+}
+
+.inner {
+  position: relative;
+  z-index: 1;
+  padding: 1.75rem 1.5rem 1.5rem;
+  color: #f4f4f8;
+}
+
+.quotes {
+  text-align: center;
+}
+
+.meta {
+  margin-top: 0.25rem;
+  text-align: left;
+}
+
+.name {
+  margin: 0 0 0.35rem;
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: #fff;
+}
+
+.years {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: rgb(255 255 255 / 72%);
+}
+
+.achievements {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: rgb(255 255 255 / 88%);
+}
+
+.quoteKo {
+  margin: 0 0 1rem;
+  /* 기존 1.2rem 대비 +20% */
+  font-size: 1.44rem;
+  line-height: 1.55;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #fff;
+}
+
+.quoteEn {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  font-style: italic;
+  color: rgb(255 255 255 / 78%);
+}
+
+.divider {
+  height: 1px;
+  margin: 1.1rem 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(255 255 255 / 28%),
+    transparent
+  );
+}
